@@ -1,43 +1,48 @@
-import { useConnection, useWallet } from "@solana/wallet-adapter-react"
-import { Keypair, SystemProgram, Transaction } from "@solana/web3.js";
-import {createMint,getMinimumBalanceForRentExemptAccount,TOKEN_2022_PROGRAM_ID,createInitializeMint2Instruction} from "@solana/spl-token"
+import { Keypair,SystemProgram,Transaction } from "@solana/web3.js";
+import { useConnection,useWallet } from "@solana/wallet-adapter-react";
+import{MINT_SIZE,TOKEN_2022_PROGRAM_ID,createInitializeMint2Instruction,createMint,getMinimumBalanceForRentExemptMint} from "@solana/spl-token"
 
-function TokenLaunchpad(){
-    const {connection}=useConnection();
-    const wallet=useWallet();
+ function TokenLAunchpad(){
+        const {connection} =useConnection();
+        const wallet=useWallet();
 
-    async getTok(){
-    const TokenKeypair=Keypair.generate();
-    const lamports=await getMinimumBalanceForRentExemptAccount(connection);
+        async function getToken(){
 
-    const transaction=new Transaction().add(
-        SystemProgram.createAccount({
-             /** The account that will transfer lamports to the created account */
-                fromPubkey: wallet.publicKey,
-                /** Public key of the created account */
-                newAccountPubkey: TokenKeypair.publicKey,
-                /** Amount of lamports to transfer to the created account */
-                lamports,
-                /** Amount of space in bytes to allocate to the created account */
-                space: MINT_SIZE,
-                /** Public key of the program to assign as the owner of the created account */
-                programId: TOKEN_2022_PROGRAM_ID,
-        }),
+              const TokenKeypair=Keypair.generate();
+              const lamports=await getMinimumBalanceForRentExemptMint(connection);
 
-        createInitializeMint2Instruction(TokenKeypair.publicKey,9,wallet.publicKey,wallet.publicKey,TOKEN_2022_PROGRAM_ID)
-    );
-    
-    transaction.feePayer=wallet.publicKey;
-    transaction.recentBlockhash=await connection.getLatestBlockhash().b
+              const transaction =new Transaction().add(
+                     SystemProgram.createAccount({
+                            fromPubkey:wallet.publicKey,
+                            newAccountPubkey:TokenKeypair.publicKey,
+                            space:MINT_SIZE,
+                            lamports,
+                            programId:TOKEN_2022_PROGRAM_ID,
 
-}
+                     });
+
+                     createInitializeMint2Instruction(TokenKeypair.publicKey,9,wallet.publicKey.wallet.publicKey,TOKEN_2022_PROGRAM_ID);
+
+              )
+                     transaction.feePayer=wallet.publicKey;
+                     transaction.recentBlockhash=(await connection.getLatestBlockhash()).blockhash;
+                     transaction.partialSign(TokenKeypair);
+
+                     await wallet.sendTransaction(transaction,connection);
+
+                     console.log('Token Mint created At ' + TokenKeypair.publicKey.toBase58());
+
+              
+
+        }
+
+        return <div>
+              <input placeholder="Name"></input>
+              <input placeholder="Symbol"></input>
+              <input placeholder="Image url"></input>
+              <input placeholder="Initial Supply"></input>
+              <button onClick={getToken} >Create Token</button>
+        </div>
 
 
-
-
-    return<div> 
-
-    </div>
-}
-
-export default TokenLaunchpad
+ }
