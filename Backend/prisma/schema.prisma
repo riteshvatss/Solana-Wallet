@@ -1,0 +1,31 @@
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+
+model User{
+  id Int @id @default(autoincrement())
+  First_name String
+  Mobile_number Int
+  Last_name String
+  Private_key String
+  Public_key String @unique
+  Hash String
+  transactions Transaction[]
+
+}
+
+model Transaction{
+  id Int @id @default(autoincrement())
+  to_pubKey String
+  transacted_At DateTime @default(now())
+  author    User @relation(fields: [from_pubkey], references: [Public_key])
+  from_pubkey String
+
+}
